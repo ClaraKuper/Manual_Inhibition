@@ -1,0 +1,9 @@
+Manual Inhibition
+Clara Kuper, Stefania Cionca, Martin Rolfs
+
+Project Description:
+Based on the observation that a salient flash in the visual scene leads to a dip in the saccadic reaction time distribution ~60 ms after the flash (saccadic inhibition) this projects investigates if a similar effect is also found for manual reaction times.
+
+The code in this repository can be used to run a psychophysical experiment using the Psychtoolbox in Matlab, in combination with a ViewPixx (Screen) and a TouchPixx (TouchScreen). We will implement different versions of the flash-paradigm, experimenting with different flashes, and movements towards/across the screen.
+
+BAsic visualizations of the reaction time distributions are performed as the project progresses.
