@@ -1,4 +1,4 @@
-function trialData  = runSingleTrial(trial, design, visual, settings)
+function trialData  = runSingleTrial_random(trial, design, visual, settings)
 
     ListenChar(0);
 

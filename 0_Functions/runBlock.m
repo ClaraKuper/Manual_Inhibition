@@ -19,7 +19,7 @@ function blockData = runBlock(b, b_i)
                 
         settings.id = settings.id+1;
         trial = design.b(b).trial(t);
-        blockData.trial(t) = runSingleTrial(trial, design, visual, settings);
+        blockData.trial(t) = runSingleTrial_2tar(trial, design, visual, settings);
         
         % adjust the flash gap time to the reaction time of the participant
         block_table = struct2table(blockData.trial);

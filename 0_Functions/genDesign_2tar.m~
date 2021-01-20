@@ -22,16 +22,19 @@ design.wait_to_fix = 2.0;
 
 % conditions
 design.flash = [1,0]; % if there will be a flash (1) or not (0)
+design.target = [-1,1]; % left and right target presentation
+
+
 
 % target 1
 design.tar1Rad = 1;
-design.tar1xCov = 0.6; % the part of the screen where the targt can appear
-design.tar1yCov = 0.6; % the part of the screen where the targt can appear
+design.tar1x = 0.6; % the part of the screen where the targt can appear
+design.tar1y = 0.6; % the part of the screen where the targt can appear
 
 % target 2
 design.tar2Rad = 1;
-design.tar2xCov = 0.6; % the part of the screen where the targt can appear
-design.tar2yCov = 0.6; % the part of the screen where the targt can appear
+design.tar2x = 0.6; % the part of the screen where the targt can appear
+design.tar2y = 0.6; % the part of the screen where the targt can appear
 
 % timing
 design.trialDur = 1; % maximum time to make a response

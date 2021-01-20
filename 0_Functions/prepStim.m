@@ -13,7 +13,7 @@ function prepStim
   
   % Target
   visual.tar1Rad = design.tar1Rad * visual.ppd;
-  visual.tar2Rad = design.tar2Rad * visual.ppd;
+  visual.tar2Rad = design.tar2Rad * visual.ppd;  
    
   % area in which a response is accepted
   visual.rangeAccept = design.rangeAccept * visual.ppd; 
