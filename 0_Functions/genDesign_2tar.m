@@ -37,7 +37,7 @@ design.tar2y = visual.yCenter;
 
 % timing
 design.trialDur = 1; % maximum time to make a response
-design.gapDur   = 0.1; % time substracted from reaction time to get flash time
+design.gapDur   = 0.05; % time substracted from (saccade) reaction time to get flash time
 design.flashTime = 0.1; % the flash lag time in the first trial
 design.flashDur = 0.05; % how long the flash will be on the screen
 
