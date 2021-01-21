@@ -1,4 +1,4 @@
-function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings)
+function trialData  = runSingleTrial_em(trial, design, visual, settings)
     
     ListenChar(0);
 
@@ -34,7 +34,7 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings)
     flashPos_low    = [0, visual.winHeight-design.flashy, design.flashx, visual.winHeight];
        
     % Initialize timing and monitoring parameters
-    on_fix_hand = false;
+    on_fix_hand = true;
     on_fix_eye  = false;
     time_to_fix = true;
     trial_on  = true;
@@ -146,7 +146,7 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings)
         % draw the second target
         Screen('DrawDots', visual.window, tar2pos, visual.tar2Rad, visual.black, [], 2); % first target
         % draw flash in some conditions
-        if trial.flash && trial_timer >= design.flashTime && flash_on_screen < visual.flashFlips
+        if trial.flash && trial_timer >= trial.gapDur && flash_on_screen < visual.flashFlips
             % Draw the flash
             Screen('FillRect', visual.window, visual.flashcolor, flashPos_up);
             Screen('FillRect', visual.window, visual.flashcolor, flashPos_low);
@@ -173,27 +173,27 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings)
         status = Datapixx('GetTouchpixxStatus');
                 
         % Check for touchpixx releases
-        if ~status.isPressed && isnan(t_movStart)
-            Datapixx('RegWrRd');
-            t_movStart =  Datapixx('GetTime');
-            Eyelink('Message', 'HAND_MOVED');
-        end
+        %if ~status.isPressed && isnan(t_movStart)
+        %    Datapixx('RegWrRd');
+        %    t_movStart =  Datapixx('GetTime');
+        %    Eyelink('Message', 'HAND_MOVED');
+        %end
         
         % Check for new touches
-        if status.newLogFrames && ~isnan(t_movStart) && isnan(t_movEnd)                                            % something new happened
-            [touches, ~] = Datapixx('ReadTouchpixxLog');
-            touch_X = visual.mx*touches(1,status.newLogFrames)+visual.bx;   % Convert touch to screen coordinates
-            touch_Y = visual.my*touches(2,status.newLogFrames)+visual.by;   % We use the one-before-last available touch information
-            Datapixx('RegWrRd');
+        %if status.newLogFrames && ~isnan(t_movStart) && isnan(t_movEnd)                                            % something new happened
+        %    [touches, ~] = Datapixx('ReadTouchpixxLog');
+        %    touch_X = visual.mx*touches(1,status.newLogFrames)+visual.bx;   % Convert touch to screen coordinates
+        %    touch_Y = visual.my*touches(2,status.newLogFrames)+visual.by;   % We use the one-before-last available touch information
+        %    Datapixx('RegWrRd');
             
             % check if movement reached the target box
-            if inpolygon(touch_X, touch_Y, tar2x_range, tar2y_range)
-               t_movEnd    = Datapixx('GetTime');                    % we want a time tag when the target was touched for the first time
-               Eyelink('Message', 'HAND_LANDED');
-               resp_X      = touch_X;
-               resp_Y      = touch_Y;
-            end
-        end
+        %    if inpolygon(touch_X, touch_Y, tar2x_range, tar2y_range)
+        %       t_movEnd    = Datapixx('GetTime');                    % we want a time tag when the target was touched for the first time
+        %       Eyelink('Message', 'HAND_LANDED');
+        %       resp_X      = touch_X;
+        %       resp_Y      = touch_Y;
+        %    end
+        %end
         
         % Check for eye movements
         % get gaze position to check if it's on screen
@@ -226,16 +226,16 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings)
     Eyelink('Message', sprintf('TRIAL_END_%i', settings.id));
     Datapixx('StopTouchpixxLog');  
 
-    rea_time = t_movStart - t2_draw;
-    mov_time = t_movEnd - t_movStart; 
+    %rea_time = t_movStart - t2_draw;
+    %mov_time = t_movEnd - t_movStart; 
     
     sacc_rea = t_saccStart - t2_draw;
     sacc_dur = t_saccEnd - t_saccStart;
     
-    if rea_time > 0.4 || rea_time < 0.1
+    if sacc_rea > 0.35 || sacc_rea < 0.05
         clean_rea = NaN;
     else
-        clean_rea = rea_time;
+        clean_rea = sacc_rea;
     end
     
     % present feedback
@@ -245,11 +245,11 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings)
     elseif ~ sacc_off
         DrawFormattedText(visual.window, 'The eye movement was inaccurate', 'center', 'center', visual.textColor);
         trial_succ = 0;
-    elseif ~time_to_fix || isnan(t_movEnd)
+    elseif ~time_to_fix || isnan(t_saccEnd)
         DrawFormattedText(visual.window, 'Too slow', 'center', 'center', visual.textColor);
         trial_succ = 0;
     else
-        rt_message = sprintf('Reaction Time: %.3f seconds', rea_time);
+        rt_message = sprintf('Reaction Time: %.3f seconds', sacc_rea);
         DrawFormattedText(visual.window,  rt_message, 'center', 'center', visual.textColor);
         trial_succ = 1;
     end
@@ -281,10 +281,10 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings)
     trialData.t_saccEnd       = t_saccEnd;
     trialData.t_feedback      = t_feedback;
     trialData.t_end           = t_end;
-    trialData.mean_rt         = design.flashTime;
+    %trialData.mean_rt         = design.flashTime;
     trialData.touchX          = resp_X;
     trialData.touchY          = resp_Y;
-    trialData.version         = '2tar';
+    trialData.version         = 'em_only';
     
     Eyelink('command', 'clear_screen 0');
     WaitSecs(design.iti);

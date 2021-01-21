@@ -1,5 +1,5 @@
-function genDesign_2tar(vpcode)
-%
+function genDesign_em(vpcode)
+% eye movements only
 % 2017 by Martin Rolfs
 % 2021 mod by Clara Kuper
 
@@ -37,9 +37,9 @@ design.tar2y = visual.yCenter;
 
 % timing
 design.trialDur = 1; % maximum time to make a response
-design.gapDur   = 0.1; % time substracted from reaction time to get flash time
+design.maxgapDur   = 0.2; % time substracted from (saccade) reaction time to get flash time
 design.flashTime = 0.1; % the flash lag time in the first trial
-design.flashDur = 0.05; % how long the flash will be on the screen
+design.flashDur = 0.1; % how long the flash will be on the screen
 
 % flash area
 design.flashy = 1/3 * scr.yres; % proportion of the screen with a flash
@@ -68,13 +68,13 @@ for b = 1:design.nBlocks
                
                 % define a fixation duration
                 trial(t).fixDur = design.fixDur + rand() * design.fixDurJ;
+                trial(t).gapDur = design.maxgapDur * rand();
             end
         end
     end
     % randomize trials
     r = randperm(t);
     design.b(b).trial = trial(r);
-    desi
 end
 
 blockOrder = [1:b];

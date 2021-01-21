@@ -52,7 +52,7 @@ try
     setScreens;
                                                                                 
     % generate design 
-    genDesign_2tar(subCode);
+    genDesign_em(subCode);
     
     % prepare the stimuli
     prepStim;
