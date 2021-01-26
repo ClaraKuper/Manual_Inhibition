@@ -52,7 +52,7 @@ try
     setScreens;
                                                                                 
     % generate design 
-    genDesign_em(subCode);
+    genDesign_2tar(subCode);
     
     % prepare the stimuli
     prepStim;
@@ -177,3 +177,18 @@ expEnd = toc;
 fprintf('This experiment lasted %i minutes', round(expEnd/60,0));
 sca;
 Screen('CloseAll');
+
+% get some values that we want to print (visualize) later
+saccades = data_table.t_saccStart;
+hand_movements = data_table.t_movStart;
+flash = data_table.t_flash;
+
+hmf =  hand_movements - flash;
+f_hmf = hmf(hmf > 0.0);
+% plot them
+figure(1)
+histogram(saccades-flash)
+title('histogram of saccades')
+figure(2)
+histogram(f_hmf)
+title('histogram of hand movements')

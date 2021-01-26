@@ -34,7 +34,7 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings)
     flashPos_low    = [0, visual.winHeight-design.flashy, design.flashx, visual.winHeight];
     
     % set flash timing
-    gapDur = settings.mean_rea - trial.gapDur;
+    gapDur = 
        
     % Initialize timing and monitoring parameters
     on_fix_hand = false;
@@ -251,9 +251,6 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings)
     elseif ~time_to_fix || isnan(t_movEnd)
         DrawFormattedText(visual.window, 'Too slow', 'center', 'center', visual.textColor);
         trial_succ = 0;
-    elseif rea_time < 0.07
-        DrawFormattedText(visual.window, 'Too fast', 'center', 'center', visual.textColor);
-        trial_succ = 0;  
     else
         rt_message = sprintf('Reaction Time: %.3f seconds', rea_time);
         DrawFormattedText(visual.window,  rt_message, 'center', 'center', visual.textColor);
@@ -287,8 +284,7 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings)
     trialData.t_saccEnd       = t_saccEnd;
     trialData.t_feedback      = t_feedback;
     trialData.t_end           = t_end;
-    trialData.mean_rt         = settings.mean_rea;
-    trialData.gapDur          = gapDur;
+    trialData.mean_rt         = design.flashTime;
     trialData.touchX          = resp_X;
     trialData.touchY          = resp_Y;
     trialData.version         = '2tar';

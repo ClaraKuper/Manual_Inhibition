@@ -22,7 +22,7 @@ design.wait_to_fix = 2.0;
 % design.response = KbName('space');
 
 % conditions
-design.flash = [1,0]; % if there will be a flash (1) or not (0)
+design.flash = [0,1]; % if there will be a flash (1) or not (0)
 design.target = [-1,1]; % left and right target presentation
 
 % target 1
@@ -37,9 +37,10 @@ design.tar2y = visual.yCenter;
 
 % timing
 design.trialDur = 1; % maximum time to make a response
-design.gapDur   = 0.05; % time substracted from (saccade) reaction time to get flash time
-design.flashTime = 0.1; % the flash lag time in the first trial
-design.flashDur = 0.05; % how long the flash will be on the screen
+design.gapDur   = 0.11; % time substracted from (saccade) reaction time to get flash time
+design.gapDurJitter = 0.03; % add some extra jitter to the presentation time
+design.flashTime = 0.2; % the flash lag time in the first trial
+design.flashDur = 0.033; % how long the flash will be on the screen
 
 % flash area
 design.flashy = 1/3 * scr.yres; % proportion of the screen with a flash
@@ -68,6 +69,8 @@ for b = 1:design.nBlocks
                
                 % define a fixation duration
                 trial(t).fixDur = design.fixDur + rand() * design.fixDurJ;
+                % a random offset of the flash onset in each trial
+                trial(t).gapDur = design.gapDur + ((rand()-0.5)*design.gapDurJitter*2);
             end
         end
     end
