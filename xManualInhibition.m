@@ -113,7 +113,7 @@ try
     
     for b = design.blockOrder
         
-        data.block(b_i) = runBlock(b, b_i);
+        data.block(b_i) = runBlock(b, b_i,el);
         b_i = b_i+1;
         settings.feedback = 0;
         

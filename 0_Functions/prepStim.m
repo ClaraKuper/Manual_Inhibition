@@ -14,6 +14,7 @@ function prepStim
   % Target
   visual.tar1Rad = design.tar1Rad * visual.ppd;
   visual.tar2Rad = design.tar2Rad * visual.ppd;  
+  visual.tar3Rad = design.tar3Rad * visual.ppd;  
    
   % area in which a response is accepted
   visual.rangeAccept = design.rangeAccept * visual.ppd; 
@@ -22,6 +23,7 @@ function prepStim
   % color definitions
   visual.tar1color = visual.white;
   visual.tar2color = visual.white;
+  visual.tar3color = visual.white;
   visual.flashcolor = visual.white;
   visual.textColor = visual.white; 
   visual.fixColor = visual.white;

@@ -1,6 +1,13 @@
-function blockData = runBlock(b, b_i)
+function blockData = runBlock(b, b_i, el)
 
     global visual design settings
+    
+    % start each block with a calibration
+    if settings.EYETRACK && b_i > 1
+        sprintf('block %i', b);
+        EyelinkDoTrackerSetup(el);
+    end
+    settings.FIXBREAK = 0;
     
     % print some messages at the beginning
     messageStart = sprintf('This is block no. %i', b_i);

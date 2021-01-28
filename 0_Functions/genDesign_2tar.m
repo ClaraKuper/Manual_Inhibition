@@ -24,6 +24,7 @@ design.wait_to_fix = 2.0;
 % conditions
 design.flash = [0,1]; % if there will be a flash (1) or not (0)
 design.target = [-1,1]; % left and right target presentation
+design.shift = [0,1]; % is the target shifted inwards or not
 
 % target 1
 design.tar1Rad = 1;
@@ -34,6 +35,11 @@ design.tar1yPos = visual.yCenter;
 design.tar2Rad = 1;
 design.tar2x = 10; % the distance of the second target in dva
 design.tar2y = visual.yCenter; 
+
+% target 3
+design.tar3Rad = 1;
+design.tar3x = 10;
+design.tar3y = visual.yCenter;
 
 % timing
 design.trialDur = 1; % maximum time to make a response
@@ -53,7 +59,7 @@ design.rangeCalib  = 1;
 % overall information %
 % number of blocks and trials in the first round
 design.nBlocks = 5;
-design.nTrials = 25; %50 trials per condition and block 
+design.nTrials = 20; % n of trials per condition
   
 % build experimental blocks
 for b = 1:design.nBlocks
@@ -61,16 +67,24 @@ for b = 1:design.nBlocks
     for triali = 1:design.nTrials
         for flash = design.flash
             for tar = design.target
-                t = t+1;
-                % define the trial condition
-                trial(t).flash = flash;
-                trial(t).tar2xPos = design.tar2x * tar;
-                trial(t).tar2yPos = design.tar2y;
-               
-                % define a fixation duration
-                trial(t).fixDur = design.fixDur + rand() * design.fixDurJ;
-                % a random offset of the flash onset in each trial
-                trial(t).gapDur = design.gapDur + ((rand()-0.5)*design.gapDurJitter*2);
+                for shift = design.shift
+                    t = t+1;
+                    % define the trial condition
+                    trial(t).flash = flash;
+                    trial(t).tar2xPos = design.tar2x * tar;
+                    trial(t).tar2yPos = design.tar2y;
+
+                    trial(t).tar3xPos = design.tar3x * tar;
+                    trial(t).tar3yPos = design.tar3y;
+
+                    % define a fixation duration
+                    trial(t).fixDur = design.fixDur + rand() * design.fixDurJ;
+                    % a random offset of the flash onset in each trial
+                    trial(t).gapDur = design.gapDur + ((rand()-0.5)*design.gapDurJitter*2);
+                    
+                    % will there be a shift or not
+                    trial(t).shift = shift;
+                end
             end
         end
     end

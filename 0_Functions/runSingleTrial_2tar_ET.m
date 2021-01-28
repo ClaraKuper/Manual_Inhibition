@@ -1,4 +1,4 @@
-function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings)
+function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings, el)
     
     ListenChar(0);
 
@@ -16,8 +16,12 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings)
     tar2xPos = trial.tar2xPos * visual.ppd + visual.xCenter;
     tar2yPos = trial.tar2yPos;
     
+    tar3xPos = trial.tar3xPos * visual.ppd + visual.xCenter;
+    tar3yPos = trial.tar3yPos;
+    
     tar1pos = [design.tar1xPos, design.tar1yPos];
     tar2pos = [tar2xPos, tar2yPos];
+    tar3pos = [tar3xPos, tar3yPos];
     
     tar1x_range = [tar1pos(1)-visual.rangeAccept, tar1pos(1)+visual.rangeAccept];
     tar1y_range = [tar1pos(2)-visual.rangeAccept, tar1pos(2)+visual.rangeAccept];
@@ -32,6 +36,12 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings)
     % set the flash      
     flashPos_up     = [0, 0, design.flashx, design.flashy];
     flashPos_low    = [0, visual.winHeight-design.flashy, design.flashx, visual.winHeight];
+    
+    if trial.flash
+        flashcolor = visual.flashcolor;
+    else
+        flashcolor = visual.bgcolor;
+    end
     
     % set flash timing
     gapDur = settings.mean_rea - trial.gapDur;
@@ -149,14 +159,20 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings)
         % draw the second target
         Screen('DrawDots', visual.window, tar2pos, visual.tar2Rad, visual.black, [], 2); % first target
         % draw flash in some conditions
-        if trial.flash && trial_timer >= gapDur && flash_on_screen < visual.flashFlips
+        if trial_timer >= gapDur && flash_on_screen < visual.flashFlips
             % Draw the flash
-            Screen('FillRect', visual.window, visual.flashcolor, flashPos_up);
-            Screen('FillRect', visual.window, visual.flashcolor, flashPos_low);
+            Screen('FillRect', visual.window, flashcolor, flashPos_up);
+            Screen('FillRect', visual.window, flashcolor, flashPos_low);
             % get the flash timing
             if isnan(t_flash)
+                % get the flash timing
                 t_flash = Datapixx('GetTime');
                 Eyelink('Message', 'FLASH_ON_SCREEN');
+                
+                % move the target inwards
+                if trial.shift
+                    tar2pos = tar3pos;
+                end
             end
             % monitor the flash duration
             flash_on_screen = flash_on_screen+1;
@@ -245,6 +261,13 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings)
     if fixation_break
         DrawFormattedText(visual.window, 'Please Fixate', 'center', 'center', visual.textColor);
         trial_succ = 0;
+        settings.FIXBREAK = settings.FIXBREAK +1;
+        %sprintf('fixbreak 1 %i', settings.FIXBREAK)
+        %if settings.FIXBREAK > 2
+            %sprintf('fixbreak 2 %i', settings.FIXBREAK)
+            %EyelinkDoTrackerSetup(el);
+            %settings.FIXBREAK = 0;
+        %end
     elseif ~ sacc_off
         DrawFormattedText(visual.window, 'The eye movement was inaccurate', 'center', 'center', visual.textColor);
         trial_succ = 0;
