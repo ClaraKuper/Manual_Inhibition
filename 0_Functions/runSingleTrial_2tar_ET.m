@@ -314,6 +314,10 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings, el
     trialData.gapDur          = gapDur;
     trialData.touchX          = resp_X;
     trialData.touchY          = resp_Y;
+    trialData.t2X             = tar2xPos;
+    trialData.t3X             = tar3xPos;
+    trialData.t2Y             = tar2yPos;
+    trialData.t3Y             = tar3yPos;
     trialData.version         = '2tar';
     
     Eyelink('command', 'clear_screen 0');
