@@ -53,6 +53,7 @@ function setScreens
   
   % Open windows
   [visual.window, visual.windowRect] = PsychImaging('OpenWindow', scr.expScreen, visual.bgcolor);
+  %[visual.window, visual.windowRect] = PsychImaging('OpenWindow', scr.expScreen, visual.bgcolor,[1000 50 1900 1000]);
   [visual.xCenter, visual.yCenter] = RectCenter(visual.windowRect);
   Screen('BlendFunction', visual.window, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   

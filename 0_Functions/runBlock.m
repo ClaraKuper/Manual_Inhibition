@@ -1,17 +1,26 @@
 function blockData = runBlock(b, b_i, el)
 
-    global visual design settings
+    global visual design settings scr
     
     % start each block with a calibration
-    if settings.EYETRACK && b_i > 1
+    if b_i > 1
         sprintf('block %i', b);
         EyelinkDoTrackerSetup(el);
     end
+    
     settings.FIXBREAK = 0;
+    settings.id = 0;
     
     % print some messages at the beginning
     messageStart = sprintf('This is block no. %i', b_i);
+    if design.b(b).type == 'J'
+        btype = 'Jump';
+    elseif design.b(b).type == 'S'
+        btype = 'Serial';
+    end
+    messageType  = sprintf('The block type is %i', btype);
     DrawFormattedText(visual.window, messageStart, 'center', 200, visual.textColor);
+    %DrawFormattedText(visual.window, messageType, 'center', 500, visual.textColor);
     DrawFormattedText(visual.window, 'Press any key to start', 'center', 'center', visual.textColor);
     Screen('Flip',visual.window);
     
@@ -21,52 +30,36 @@ function blockData = runBlock(b, b_i, el)
     
     % wait for participant
     KbPressWait;  
-    
-    if settings.EYETRACK
-        Eyelink('Message', sprintf('BLOCK_START, %i, DESIGN %i', b_i, b));
-    end
+    Eyelink('Message', sprintf('BLOCK_START, %i, DESIGN %i', b_i, b));
+
     
     % go through trials
     while t <=  trials_total
                 
         settings.id = settings.id+1;
-        
-        if settings.EYETRACK
-            Eyelink('Message', 'TRIAL_ID, %i', settings.id);
-        end
-        
+        Eyelink('Message', 'TRIAL_ID, %i', settings.id);
         trial = design.b(b).trial(t);
-        if settings.EYETRACK
-            try
-                settings.mean_rea = mean(block_table.clean_rea, 'omitnan');
-            catch 
-                settings.mean_rea = design.flashTime;
-            end
-            blockData.trial(t) = runSingleTrial_2tar_ET(trial, design, visual, settings);
-        else
-            blockData.trial(t) = runSingleTrial_2tar(trial, design, visual, settings);
-        end
-        % adjust the flash gap time to the reaction time of the participant
-        block_table = struct2table(blockData.trial);
         
+        if design.b(b).type == 'J'
+            blockData.trial(t) = runSingleTrialJump(trial, visual, scr);
+        elseif design.b(b).type == 'S'
+            blockData.trial(t) = runSingleTrialSerial(trial, visual, scr);
+        end
+
         % repeat the trial, if needed
         if ~ blockData.trial(t).success
-            
             trials_total                    = trials_total + 1;
             design.b(b).trial(trials_total) = trial;
-       
         end
         
         design.b(b).trial(t).id = settings.id;
-        t = t+1;        
+        t = t+1;                   
+    
     end
     
     % end of the block
-    
-    if settings.EYETRACK
-         Eyelink('Message', sprintf('BLOCK_END, %i, DESIGN, %i', b_i, b));
-    end
-    
+    Eyelink('Message', sprintf('BLOCK_END, %i, DESIGN, %i', b_i, b));
+
     Screen('Flip', visual.window);
     WaitSecs(2);
 end
