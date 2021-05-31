@@ -6,4 +6,12 @@ Based on the observation that a salient flash in the visual scene leads to a dip
 
 The code in this repository can be used to run a psychophysical experiment using the Psychtoolbox in Matlab, in combination with a ViewPixx (Screen) and a TouchPixx (TouchScreen). We will implement different versions of the flash-paradigm, experimenting with different flashes, and movements towards/across the screen.
 
-BAsic visualizations of the reaction time distributions are performed as the project progresses.
+Basic visualizations of the reaction time distributions are performed as the project progresses.
+
+# TODO
+jump: correct feedback
+develop serial condition
+test serial condition
+merge
+get pilot data
+analyze

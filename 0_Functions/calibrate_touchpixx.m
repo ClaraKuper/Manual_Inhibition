@@ -11,7 +11,7 @@ function calibrate_touchpixx(reps)
   
   % first: try to load the calibration information
   today = date;
-  filename = sprintf('TouchCalib/%s.mat',today);
+  filename = sprintf('0_TouchCalib/%s.mat',today);
   if exist(filename)>0
       
       load(filename);

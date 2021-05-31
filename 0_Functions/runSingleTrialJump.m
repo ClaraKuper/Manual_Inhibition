@@ -1,4 +1,6 @@
-function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings, el)
+function trialData  = runSingleTrialJump(trial, visual, scr)
+    
+    global design settings
     
     ListenChar(0);
 
@@ -13,67 +15,69 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings, el
     % prepare the trial
     % set stimuli
     
-    tar2xPos = trial.tar2xPos * visual.ppd + visual.xCenter;
-    tar2yPos = trial.tar2yPos;
+    tarxPos = design.jTarxPos;
+    taryPos = design.jTaryPos;
     
-    tar3xPos = trial.tar3xPos * visual.ppd + visual.xCenter;
-    tar3yPos = trial.tar3yPos;
+    tarxJump  = trial.tarJumpPos * visual.ppd;
+    tarxShift = trial.tarShiftPos * visual.ppd; 
     
-    tar1pos = [design.tar1xPos, design.tar1yPos];
-    tar2pos = [tar2xPos, tar2yPos];
-    tar3pos = [tar3xPos, tar3yPos];
+    tarpos = [tarxPos, taryPos];
+    tarposJ = [tarxPos + tarxJump, taryPos];
+    tarposS = [tarxPos + tarxShift, taryPos];
+
+    tarx_range = [tarpos(1)-visual.rangeAccept, tarpos(1)+visual.rangeAccept];
+    tary_range = [tarpos(2)-visual.rangeAccept, tarpos(2)+visual.rangeAccept];
     
-    tar1x_range = [tar1pos(1)-visual.rangeAccept, tar1pos(1)+visual.rangeAccept];
-    tar1y_range = [tar1pos(2)-visual.rangeAccept, tar1pos(2)+visual.rangeAccept];
-    
-    tar2x_range = [tar2pos(1)-visual.rangeAccept, tar2pos(1)+visual.rangeAccept];
-    tar2y_range = [tar2pos(2)-visual.rangeAccept, tar2pos(2)+visual.rangeAccept];
+    tarxJ_range = [tarposJ(1)-visual.rangeAccept, tarposJ(1)+visual.rangeAccept];
+    taryJ_range = [tarposJ(2)-visual.rangeAccept, tarposJ(2)+visual.rangeAccept];
     
     % Draw stuff on Eyelink:
-    Eyelink('command',sprintf('draw_box %d %d %d %d 15', tar1pos(1)-visual.rangeAccept, tar1pos(2)-visual.rangeAccept, tar1pos(1)+visual.rangeAccept, tar1pos(2)+visual.rangeAccept));
-    Eyelink('command',sprintf('draw_box %d %d %d %d 15', tar2pos(1)-visual.rangeAccept, tar2pos(2)-visual.rangeAccept, tar2pos(1)+visual.rangeAccept, tar2pos(2)+visual.rangeAccept));
+    Eyelink('command',sprintf('draw_box %d %d %d %d 15', tarpos(1)-visual.rangeAccept, tarpos(2)-visual.rangeAccept, tarpos(1)+visual.rangeAccept, tarpos(2)+visual.rangeAccept));
+    Eyelink('command',sprintf('draw_box %d %d %d %d 15', tarposJ(1)-visual.rangeAccept, tarposJ(2)-visual.rangeAccept, tarposJ(1)+visual.rangeAccept, tarposJ(2)+visual.rangeAccept));
     
     % set the flash      
     flashPos_up     = [0, 0, design.flashx, design.flashy];
     flashPos_low    = [0, visual.winHeight-design.flashy, design.flashx, visual.winHeight];
     
     if trial.flash
-        flashcolor = visual.flashcolor;
+        flashColor = visual.flashColor;
     else
-        flashcolor = visual.bgcolor;
+        flashColor = visual.bgColor;
     end
     
     % set flash timing
-    gapDur = settings.mean_rea - trial.gapDur;
+    gapDur = design.mean_rea - trial.gapDur;
+    gapDurFlip = gapDur * scr.hz;    
        
-    % Initialize timing and monitoring parameters
-    on_fix_hand = false;
-    on_fix_eye  = false;
-    time_to_fix = true;
-    trial_on  = true;
-    sacc_on = false;
+    % monitoring parameters
+    fix_hand = false;
+    fix_eye  = false;
+    fix_time = true;
+    sacc_on  = false;
     sacc_off = false;
-    rt_timer  = 0;
-    flash_on_screen = 0;
+    flash_on = 0;
+    flip_count = 0;
+    trial_on = true;
 
     % timing
     t_start    = NaN;  % the trial has started
-    t1_draw    = NaN;  % the first stimulus was on screen
-    t2_draw    = NaN;  % the second stimulus was on screen
-    t_handfixed= NaN;  % check if the hand was on the start position 
-    t_eyesfixed= NaN;  % check if the eyes were in the fixation area
-    t_bothfixed= NaN;  % when the trial can start
+    t_draw     = NaN;  % the first stimulus was on screen
+    t_handfixed= NaN;  % the hand was on the start position 
+    t_eyesfixed= NaN;  % the eyes were in the fixation area
+    t_bothfixed= NaN;  % the trial can start
     t_flash    = NaN;  % the time when the flash was shown
     t_movStart = NaN;  % the hand movement started
     t_movEnd   = NaN;  % the movements ended
     t_saccStart= NaN;  % the saccade moved out of the box around target 1
     t_saccEnd  = NaN;  % the saccade moved into the vox around target 2
+    t_jump     = NaN;  % the second stimulus was on screen
     t_feedback = NaN;  % feedback was on screen
     t_end      = NaN;  % the trial is over
     rea_time   = NaN;  % manual reaction time
     mov_time   = NaN;  % manual movement duration
     sacc_rea   = NaN;  % saccade reaction time
     sacc_dur   = NaN;  % duration of the saccade
+    % positions
     resp_X     = NaN;  % response touch x
     resp_Y     = NaN;  % response touch Y
     
@@ -87,14 +91,14 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings, el
     Eyelink('Message', sprintf('TRIAL_START_%i', settings.id));
     Eyelink('Message', 'TRIAL_SYNCTIME');
 	
-    Screen('DrawDots', visual.window, tar1pos, visual.tar1Rad, visual.black, [], 2); % first target
+    Screen('DrawDots', visual.window, tarpos, visual.tarRad, visual.tarColor, [], 2); % first target
     Screen('Flip', visual.window);
     Datapixx('RegWrRd');
-    t1_draw = Datapixx('GetTime');
-    Eyelink('Message', 'T1_ON_SCREEN');
+    t_draw = Datapixx('GetTime');
+    Eyelink('Message', 'TARGET_ON_SCREEN');
 
     % while the finger is not yet on the starting position, monitor for that
-    while ~ on_fix_hand || ~ on_fix_eye
+    while ~ fix_hand || ~ fix_eye
         
         Datapixx('RegWrRd');
         status = Datapixx('GetTouchpixxStatus');
@@ -107,10 +111,10 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings, el
             Datapixx('RegWrRd');
             
             % check if the detected touch was in the target box
-            if inpolygon(touch_X, touch_Y, tar1x_range, tar1y_range)
+            if inpolygon(touch_X, touch_Y, tarx_range, tary_range)
                t_handfixed    = Datapixx('GetTime');                    % we want a time tag when the first target was touched
                Eyelink('Message', 'HAND_FIX');
-               on_fix_hand      = true;
+               fix_hand      = true;
             end
         end
         
@@ -122,22 +126,25 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings, el
             y = evt.gy(settings.eye_used+1);
             
             % do we have valid data and is the pupil visible?
-            if  inpolygon(x, y, tar1x_range, tar1y_range) && ~ on_fix_eye
-                on_fix_eye = true; % get out of monitioring loop
+            if  inpolygon(x, y, tarx_range, tary_range) && ~ fix_eye
+                fix_eye = true; % get out of monitioring loop
                 t_eyesfixed = Datapixx('GetTime'); % save time to data
                 Eyelink('Message', 'EYES_FIX'); % save time to eyelink 
             end
         end
         
-        time_passed = Datapixx('GetTime') - t2_draw;
+        time_passed = Datapixx('GetTime') - t_draw;
         
-        if time_passed > design.wait_to_fix
-            time_to_fix = false;
-            break
+        if time_passed > design.waitToFix
+            fix_time = false;
+        end
+        
+        if ~fix_time
+            % break the experiment here, do calibration or alike
         end
         
         % draw stimuli again and flip
-        Screen('DrawDots', visual.window, tar1pos, visual.tar1Rad, visual.black, [], 2); % first target
+        Screen('DrawDots', visual.window, tarpos, visual.tarRad, visual.tarColor, [], 2); % first target
         Screen('Flip', visual.window);
         Datapixx('RegWrRd');
     end
@@ -153,38 +160,34 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings, el
     % get time stamp when the first target was touched
     Datapixx('RegWrRd');
     
-    trial_timer = 0;
-    while trial_timer <= design.trialDur
+    while flip_count <= visual.trialFlips && trial_on
         
         % draw the second target
-        Screen('DrawDots', visual.window, tar2pos, visual.tar2Rad, visual.black, [], 2); % first target
+        Screen('DrawDots', visual.window, tarposJ, visual.tarRad, visual.tarColor, [], 2);
         % draw flash in some conditions
-        if trial_timer >= gapDur && flash_on_screen < visual.flashFlips
+        if flip_count >= gapDurFlip && flash_on < visual.flashFlips
             % Draw the flash
-            Screen('FillRect', visual.window, flashcolor, flashPos_up);
-            Screen('FillRect', visual.window, flashcolor, flashPos_low);
+            Screen('FillRect', visual.window, flashColor, flashPos_up);
+            Screen('FillRect', visual.window, flashColor, flashPos_low);
             % get the flash timing
             if isnan(t_flash)
                 % get the flash timing
                 t_flash = Datapixx('GetTime');
                 Eyelink('Message', 'FLASH_ON_SCREEN');
-                
-                % move the target inwards
-                if trial.shift
-                    tar2pos = tar3pos;
-                end
+                tarposJ = tarposS;
             end
             % monitor the flash duration
-            flash_on_screen = flash_on_screen+1;
+            flash_on = flash_on+1;
         end
         
         % get everything on screen
         Screen('Flip', visual.window);
+        flip_count = flip_count+1;
         Datapixx('RegWrRd');
         
-        if isnan(t2_draw) % set time stamp the first time this is executed
-            t2_draw = Datapixx('GetTime');
-            Eyelink('Message', 'T2_ON_SCREEN');
+        if isnan(t_jump) % set time stamp the first time this is executed
+            t_jump = Datapixx('GetTime');
+            Eyelink('Message', 'TARGET_JUMPED');
         end
         
         % Get the touchpixx status
@@ -206,11 +209,12 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings, el
             Datapixx('RegWrRd');
             
             % check if movement reached the target box
-            if inpolygon(touch_X, touch_Y, tar2x_range, tar2y_range)
+            if inpolygon(touch_X, touch_Y, tarxJ_range, taryJ_range)
                t_movEnd    = Datapixx('GetTime');                    % we want a time tag when the target was touched for the first time
                Eyelink('Message', 'HAND_LANDED');
                resp_X      = touch_X;
                resp_Y      = touch_Y;
+               trial_on    = false;
             end
         end
         
@@ -223,21 +227,19 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings, el
             y = evt.gy(settings.eye_used+1);
 
             if evt.pa(settings.eye_used+1) < 1 % is the pupil visible?
-                fixation_break = true;
-                Eyelink('Message', 'FIXATION_BREAK');
-            elseif ~sacc_on &&  ~ inpolygon(x,y, tar1x_range, tar1y_range)
+                %fixation_break = true;
+                %Eyelink('Message', 'FIXATION_BREAK');
+                %trial_on = false;
+            elseif ~sacc_on &&  ~ inpolygon(x,y, tarx_range, tary_range)
                 sacc_on = true;
                 t_saccStart    = Datapixx('GetTime');                    % we want a time tag when the target was touched for the first time
                 Eyelink('Message', 'SACCADE_STARTED');
-            elseif sacc_on && ~sacc_off && inpolygon(x,y, tar2x_range, tar2y_range)
+            elseif sacc_on && ~sacc_off && inpolygon(x,y, tarxJ_range, taryJ_range)
                 sacc_off = true;
                 t_saccEnd    = Datapixx('GetTime');                    % we want a time tag when the target was touched for the first time
                 Eyelink('Message', 'SACCADE_LANDED');
             end
         end
-        
-        % update the trial timer
-        trial_timer = Datapixx('GetTime') - t2_draw;
     end
     
     Datapixx('RegWrRd');
@@ -245,33 +247,36 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings, el
     Eyelink('Message', sprintf('TRIAL_END_%i', settings.id));
     Datapixx('StopTouchpixxLog');  
 
-    rea_time = t_movStart - t2_draw;
+    rea_time = t_movStart - t_jump;
     mov_time = t_movEnd - t_movStart; 
     
-    sacc_rea = t_saccStart - t2_draw;
+    sacc_rea = t_saccStart - t_jump;
     sacc_dur = t_saccEnd - t_saccStart;
     
     if sacc_rea > 0.35 || sacc_rea < 0.05
         clean_rea = NaN;
     else
         clean_rea = sacc_rea;
+        design.mean_rea = mean([design.mean_rea, clean_rea]);
     end
+    
+    
     
     % present feedback
     if fixation_break
         DrawFormattedText(visual.window, 'Please Fixate', 'center', 'center', visual.textColor);
         trial_succ = 0;
         settings.FIXBREAK = settings.FIXBREAK +1;
-        %sprintf('fixbreak 1 %i', settings.FIXBREAK)
-        %if settings.FIXBREAK > 2
-            %sprintf('fixbreak 2 %i', settings.FIXBREAK)
-            %EyelinkDoTrackerSetup(el);
-            %settings.FIXBREAK = 0;
-        %end
+        sprintf('fixbreak 1 %i', settings.FIXBREAK)
+        if settings.FIXBREAK > 2
+            sprintf('fixbreak 2 %i', settings.FIXBREAK)
+            EyelinkDoTrackerSetup(el);
+            settings.FIXBREAK = 0;
+        end
     elseif ~ sacc_off
         DrawFormattedText(visual.window, 'The eye movement was inaccurate', 'center', 'center', visual.textColor);
         trial_succ = 0;
-    elseif ~time_to_fix || isnan(t_movEnd)
+    elseif ~fix_time || isnan(t_movEnd)
         DrawFormattedText(visual.window, 'Too slow', 'center', 'center', visual.textColor);
         trial_succ = 0;
     elseif rea_time < 0.07
@@ -298,8 +303,8 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings, el
     trialData.sacc_dur        = sacc_dur;
     trialData.initPixx        = t_initPixx;
     trialData.t_start         = t_start;
-    trialData.t1_draw         = t1_draw;
-    trialData.t2_draw         = t2_draw;
+    trialData.t_draw          = t_draw;
+    trialData.t_jump          = t_jump;
     trialData.t_handfixed     = t_handfixed;
     trialData.t_eyesfixed     = t_eyesfixed;
     trialData.t_bothfixed     = t_bothfixed;
@@ -310,15 +315,11 @@ function trialData  = runSingleTrial_2tar_ET(trial, design, visual, settings, el
     trialData.t_saccEnd       = t_saccEnd;
     trialData.t_feedback      = t_feedback;
     trialData.t_end           = t_end;
-    trialData.mean_rt         = settings.mean_rea;
+    trialData.mean_rt         = design.mean_rea;
     trialData.gapDur          = gapDur;
     trialData.touchX          = resp_X;
     trialData.touchY          = resp_Y;
-    trialData.t2X             = tar2xPos;
-    trialData.t3X             = tar3xPos;
-    trialData.t2Y             = tar2yPos;
-    trialData.t3Y             = tar3yPos;
-    trialData.version         = '2tar';
+    trialData.version         = 'JUMP';
     
     Eyelink('command', 'clear_screen 0');
     WaitSecs(design.iti);
